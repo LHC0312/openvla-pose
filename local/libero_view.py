@@ -34,7 +34,7 @@ def list_tasks(suite_name=None):
 
 def view(suite='libero_spatial', task_idx=0, max_steps=2000):
     # Lazy import to keep --list fast
-    from libero.libero.envs import ControlEnv
+    from libero.libero.envs.env_wrapper import ControlEnv
 
     bdict = benchmark.get_benchmark_dict()
     if suite not in bdict:
