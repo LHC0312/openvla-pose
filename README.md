@@ -86,6 +86,16 @@ python local/check_equivariance.py --encoder checkpoints/gnn_encoder.pt
 - Invariant: 회전해도 z가 같음 (encoder)
 - Equivariant: z의 변환이 출력의 변환과 commutative (decoder)
 
+## 결과 보는 방법 (Drive 다운만이 답이 아님)
+
+| 방법 | 시나리오 |
+|---|---|
+| **셀 inline 출력** | matplotlib/plotly — Colab UI에 즉시 표시 |
+| **Gradio share URL** | 노트북 01/04 마지막 셀. `demo.launch(share=True)` → `https://xxxx.gradio.live` 발급, 핸드폰에서도 접속 |
+| **W&B (wandb.ai)** | 학습 메트릭 실시간 클라우드 대시보드 (학생 무료) |
+| **TensorBoard** | Colab 내 `%tensorboard --logdir runs` |
+| **Drive sync + 로컬 viz** | 결과 `.npz` Drive 저장 → 로컬 `local/viz_*.py`로 분석 |
+
 ## 위험 신호 (먼저 검증할 것)
 
 1. **OpenVLA hidden state alignment**: 사람/로봇 영상의 hidden state가 실제로 가까운지 → notebook 01에서 검증
