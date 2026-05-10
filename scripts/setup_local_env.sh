@@ -38,8 +38,8 @@ pip install \
 pip install e3nn
 pip install torch_geometric
 
-# 5. (선택) MediaPipe — 로컬에서 빠른 포즈 테스트용
-pip install mediapipe || echo "mediapipe 설치 실패 — Colab에서 진행"
+# 5. Gradio for web demo
+pip install gradio
 
 # 6. Jupyter 커널 등록
 python -m ipykernel install --user --name openvla-pose-local --display-name "OpenVLA-Pose (local)"
