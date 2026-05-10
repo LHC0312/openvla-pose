@@ -32,3 +32,6 @@ lightning_logs/
 
 # Local-only
 local/.venv/
+
+# Cloned external repos (large)
+external/
