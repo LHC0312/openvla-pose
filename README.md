@@ -34,6 +34,20 @@ openvla-pose/
 └── docs/               # 설계 문서
 ```
 
+## 1순위: OpenVLA-OFT + LIBERO 재현
+
+연구를 본격화하기 전에 **표준 baseline**부터 직접 굴려봅니다.
+
+| | 내용 |
+|---|---|
+| 모델 | `moojink/openvla-7b-oft-finetuned-libero-spatial` (HF) |
+| Sim | LIBERO (MuJoCo) — 4 task suites: spatial, object, goal, 10 |
+| 노트북 | [notebooks/00_libero_oft_reproduce.ipynb](notebooks/00_libero_oft_reproduce.ipynb) |
+| GPU | A100 권장 (16GB VRAM 필요) |
+| 한 task rollout | ~5-15분 (5 trial) |
+
+**Colab 직링크**: https://colab.research.google.com/github/LHC0312/openvla-pose/blob/main/notebooks/00_libero_oft_reproduce.ipynb
+
 ## 워크플로우
 
 ### Step 1. 로컬 환경 세팅 (1회)
