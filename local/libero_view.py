@@ -32,8 +32,11 @@ def list_tasks(suite_name=None):
             print(f'  [{i:2d}] {t.language}')
 
 
-def view(suite='libero_spatial', task_idx=0, max_steps=2000):
+def view(suite='libero_spatial', task_idx=0, max_steps=2000, action_mode='zero'):
     # Lazy import to keep --list fast
+    import numpy as np
+    import mujoco
+    import mujoco.viewer
     from libero.libero.envs.env_wrapper import ControlEnv
 
     bdict = benchmark.get_benchmark_dict()
@@ -52,25 +55,53 @@ def view(suite='libero_spatial', task_idx=0, max_steps=2000):
     print(f'Suite: {suite}')
     print(f'Task : [{task_idx}] {task.language}')
     print(f'BDDL : {bddl_path}')
+    print(f'Action mode: {action_mode}')
 
+    # NOTE: has_renderer=False because we use mujoco.viewer directly.
+    # robosuite's onscreen renderer is unreliable on macOS arm64 + mujoco 3.x.
     env = ControlEnv(
         bddl_file_name=bddl_path,
         robots=['Panda'],
-        has_renderer=True,
+        has_renderer=False,
         has_offscreen_renderer=False,
         use_camera_obs=False,
-        render_camera='agentview',
         ignore_done=True,
     )
     env.reset()
-    print('\nViewer open. Mouse to navigate. Ctrl+C to exit.')
 
-    import numpy as np
-    zero_action = np.zeros(7)
+    # Pull the raw mujoco MjModel / MjData from robosuite's wrapper
+    sim = env.env.sim
+    model = sim.model._model
+    data = sim.data._data
+
+    print('\nViewer open. Mouse: left=rotate, right=pan, scroll=zoom. Close window or Ctrl+C to exit.')
+
+    rng = np.random.default_rng(0)
+    def get_action():
+        if action_mode == 'zero':
+            return np.zeros(7)
+        if action_mode == 'random':
+            a = rng.uniform(-0.3, 0.3, size=7)
+            a[6] = rng.choice([-1.0, 1.0])  # gripper open/close
+            return a
+        if action_mode == 'wave':
+            # Smooth EE rotation back and forth
+            t = get_action.t
+            get_action.t += 1
+            a = np.zeros(7)
+            a[3] = 0.4 * np.sin(t * 0.05)  # roll
+            a[4] = 0.4 * np.cos(t * 0.05)  # pitch
+            return a
+        return np.zeros(7)
+    get_action.t = 0
+
     try:
-        for step in range(max_steps):
-            env.step(zero_action)
-            env.env.render()
+        with mujoco.viewer.launch_passive(model, data) as viewer:
+            step = 0
+            while viewer.is_running() and step < max_steps:
+                env.step(get_action())
+                viewer.sync()
+                step += 1
     except KeyboardInterrupt:
         print('\nInterrupted by user')
     finally:
@@ -82,14 +113,16 @@ def main():
     ap.add_argument('--suite', default='libero_spatial', choices=SUITES)
     ap.add_argument('--task', type=int, default=0)
     ap.add_argument('--list', action='store_true', help='List all tasks and exit')
-    ap.add_argument('--max-steps', type=int, default=2000)
+    ap.add_argument('--max-steps', type=int, default=10000)
+    ap.add_argument('--action', choices=['zero', 'random', 'wave'], default='zero',
+                    help='zero=정지, random=흔들기, wave=EE 회전')
     args = ap.parse_args()
 
     if args.list:
         list_tasks()
         return
 
-    view(args.suite, args.task, args.max_steps)
+    view(args.suite, args.task, args.max_steps, args.action)
 
 
 if __name__ == '__main__':
